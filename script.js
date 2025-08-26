@@ -94,6 +94,23 @@ const audioNames = {
 // FUNÇÕES PRINCIPAIS
 // =========================================================================
 
+// Exemplo de como chamar a vibração no seu JavaScript
+
+// Dentro de uma função que é disparada pelo seu alarme:
+function tocarAlarme() {
+    // Sua lógica de alarme aqui...
+
+    // Verifica se a interface do Android existe antes de chamar
+    if (typeof AndroidVibrator !== 'undefined') {
+        // Vibra por 1 segundo (1000 milissegundos)
+        AndroidVibrator.vibratePhone(1000); 
+    }
+}
+
+// Se você quiser testar, pode adicionar um botão no seu HTML:
+// <button onclick="tocarAlarme()">Testar Alarme com Vibração</button>
+
+
 function alternarSecao(secaoAtiva) {
     if (cronoInterval) pausarCrono();
     if (temporizadorInterval) pausarTemporizador();
