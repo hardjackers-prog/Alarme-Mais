@@ -873,3 +873,15 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+// Exemplo de como chamar a notificação no seu JavaScript
+
+function dispararNotificacaoAlarme() {
+    // Sua lógica de alarme aqui...
+
+    // Verifica se a interface do Android existe
+    if (typeof AndroidAlarm !== 'undefined') {
+        AndroidAlarm.createAlarm("Sua mensagem de alarme aqui."); 
+    }
+}
+
