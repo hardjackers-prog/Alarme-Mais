@@ -68,7 +68,7 @@ const btnConfirmarNao = document.getElementById('btnConfirmarNao');
 const btnAtualizacoes = document.getElementById('btnAtualizacoes');
 const popupAtualizacoes = document.getElementById('popup-atualizacoes');
 const closeBtnAtualizacoes = popupAtualizacoes.querySelector('.close-btn');
-const btnReiniciar = document.getElementById('btnReiniciar'); // Botão de Reiniciar
+const btnReiniciar = document.getElementById('btnReiniciar');
 
 let alarmes = [];
 let temposX = [];
@@ -90,26 +90,21 @@ const audioNames = {
     "alarme5.mp3": "Gamer"
 };
 
-// =========================================================================
-// FUNÇÕES PRINCIPAIS
-// =========================================================================
-
-// Exemplo de como chamar a vibração no seu JavaScript
-
-// Dentro de uma função que é disparada pelo seu alarme:
-function tocarAlarme() {
-    // Sua lógica de alarme aqui...
-
-    // Verifica se a interface do Android existe antes de chamar
-    if (typeof AndroidVibrator !== 'undefined') {
-        // Vibra por 1 segundo (1000 milissegundos)
-        AndroidVibrator.vibratePhone(1000); 
+function tocarAlarme(nome, som) {
+    if (window.AndroidInterface && typeof window.AndroidInterface.triggerNativeAlarm === 'function') {
+        window.AndroidInterface.triggerNativeAlarm(nome || "Alarme", "Seu Alarme está tocando!");
+    } else {
+        somAlarme.src = som;
+        somAlarme.play();
+        somAlarme.loop = true;
+        alarmeTocandoHora.textContent = nome;
+        popupAlarmeTocando.style.display = 'flex';
+        
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("Alarme", `${nome} está tocando!`);
+        }
     }
 }
-
-// Se você quiser testar, pode adicionar um botão no seu HTML:
-// <button onclick="tocarAlarme()">Testar Alarme com Vibração</button>
-
 
 function alternarSecao(secaoAtiva) {
     if (cronoInterval) pausarCrono();
@@ -149,7 +144,6 @@ function carregarAlarmes() {
 
 function requestNotificationPermission() {
     if (!("Notification" in window)) {
-        // Usa um pop-up customizado em vez de alert()
         mostrarPopupGenerico("Este navegador não suporta notificações.");
         return;
     }
@@ -196,7 +190,6 @@ function atualizarRelogio() {
 }
 
 function ordenarAlarmes() {
-    // Função de comparação para ordenar os alarmes
     alarmes.sort((a, b) => {
         const [aHoras, aMinutos] = a.hora.split(':').map(Number);
         const [bHoras, bMinutos] = b.hora.split(':').map(Number);
@@ -209,7 +202,7 @@ function ordenarAlarmes() {
 }
 
 function renderizarAlarmes() {
-    ordenarAlarmes(); // Chama a função de ordenação antes de renderizar
+    ordenarAlarmes();
     listaAlarmes.innerHTML = '';
     if (alarmes.length === 0) {
         listaAlarmes.innerHTML = '<p style="text-align: center;">Nenhum alarme criado.</p>';
@@ -265,19 +258,6 @@ function renderizarAlarmes() {
 
         listaAlarmes.appendChild(alarmeItem);
     });
-}
-
-function tocarAlarme(nome, som) {
-    if (window.AndroidInterface && typeof window.AndroidInterface.triggerNativeAlarm === 'function') {
-        window.AndroidInterface.triggerNativeAlarm(nome || "Alarme", "Seu Alarme está tocando!");
-    } else {
-        somAlarme.src = som;
-        somAlarme.play();
-        somAlarme.loop = true;
-        alarmeTocandoHora.textContent = nome;
-        popupAlarmeTocando.style.display = 'flex';
-        displayNotification("Alarme", `${nome} está tocando!`);
-    }
 }
 
 function pararAlarme() {
@@ -600,25 +580,17 @@ function renderizarTemposX() {
     });
 }
 
-// Função genérica para substituir alerts()
 function mostrarPopupGenerico(mensagem) {
     mensagemConfirmacao.textContent = mensagem;
-    // Oculta os botões de Sim/Não para uma mensagem simples
     btnConfirmarSim.style.display = 'none';
     btnConfirmarNao.textContent = 'Ok';
     popupConfirmacao.style.display = 'flex';
-    // Adiciona um listener temporário para fechar o popup
     btnConfirmarNao.onclick = () => {
         popupConfirmacao.style.display = 'none';
-        btnConfirmarSim.style.display = 'inline-block'; // Restaura o botão Sim
-        btnConfirmarNao.textContent = 'Não'; // Restaura o texto do botão Não
+        btnConfirmarSim.style.display = 'inline-block';
+        btnConfirmarNao.textContent = 'Não';
     };
 }
-
-
-// =========================================================================
-// EVENT LISTENERS
-// =========================================================================
 
 btnAlarme.addEventListener('click', () => alternarSecao('alarme'));
 btnCrono.addEventListener('click', () => alternarSecao('crono'));
@@ -704,7 +676,6 @@ btnApagarTudo.addEventListener('click', () => {
 
     settingsPopup.style.display = 'none';
     mensagemConfirmacao.textContent = 'Tem certeza que deseja excluir todos os alarmes?';
-    // Garante que os botões de Sim/Não estão visíveis
     btnConfirmarSim.style.display = 'inline-block';
     btnConfirmarNao.textContent = 'Não';
     popupConfirmacao.style.display = 'flex';
@@ -719,8 +690,8 @@ btnApagarTudo.addEventListener('click', () => {
 
 btnConfirmarNao.addEventListener('click', () => {
     popupConfirmacao.style.display = 'none';
-    btnConfirmarSim.style.display = 'inline-block'; // Restaura o botão Sim
-    btnConfirmarNao.textContent = 'Não'; // Restaura o texto do botão Não
+    btnConfirmarSim.style.display = 'inline-block';
+    btnConfirmarNao.textContent = 'Não';
 });
 
 btnParar.addEventListener('click', pararAlarme);
@@ -870,16 +841,9 @@ closeBtnAtualizacoes.addEventListener('click', () => {
     popupAtualizacoes.style.display = 'none';
 });
 
-// Listener de evento para o novo botão de Reiniciar
 btnReiniciar.addEventListener('click', () => {
-    // Recarrega a página para reiniciar o aplicativo
     location.reload();
 });
-
-
-// =========================================================================
-// INICIALIZAÇÃO
-// =========================================================================
 
 function carregarTemaSalvo() {
     const savedTheme = localStorage.getItem('theme');
